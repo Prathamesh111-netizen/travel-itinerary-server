@@ -1,0 +1,28 @@
+version: 2.1
+jobs:
+  up-jpmc-server:
+    docker:
+      - image: deadcoder11u2/ci-img
+    steps:
+      - checkout
+      - run: okteto context use https://cloud.okteto.com --token $OKTETO_TOKEN
+      - run:
+          okteto deploy --build -n jpmc-prathamesh111-netizen
+workflows:
+  build_and_test:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                main
+    jobs:
+      - up-jpmc-server
+  deploy:
+    jobs:
+      - up-jpmc-server:
+          filters:
+            branches:
+              only:
+                - main
