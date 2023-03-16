@@ -34,6 +34,18 @@ const login = async (req, res, next) => {
     const accessToken = generateToken(user._id, "access");
     const refreshToken = generateToken(user._id, "refresh");
 
+    res.cookie("AccessToken", accessToken, {
+      expires: new Date(Date.now() + process.env.MAX_AGE_ACCESS_COOKIE),
+      maxAge: process.env.MAX_AGE_ACCESS_COOKIE,
+      httpOnly: true,
+    });
+
+    res.cookie("RefreshToken", refreshToken, {
+      expires: new Date(Date.now() + process.env.MAX_AGE_REFRESH_COOKIE),
+      maxAge: process.env.MAX_AGE_REFRESH_COOKIE,
+      httpOnly: true,
+    });
+
     // if the passwords are matching, then check if a refresh token exists for this user
     if (user && (await user.matchPassword(password))) {
       const existingToken = await Token.findOne({ email });
@@ -49,15 +61,18 @@ const login = async (req, res, next) => {
       }
 
       res.json({
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        isAdmin: user.isAdmin,
-        profilephoto: user.profilephoto,
-        isConfirmed: user.isConfirmed,
-        avatar: user.avatar,
-        accessToken,
-        refreshToken,
+        success: true,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          isAdmin: user.isAdmin,
+          profilephoto: user.profilephoto,
+          isConfirmed: user.isConfirmed,
+          avatar: user.avatar,
+          accessToken,
+          refreshToken,
+        },
       });
     } else {
       res.status(401);
@@ -75,9 +90,9 @@ const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    const userExists = await User.findOne({ email });
+    const userExists = await User.find({ email });
 
-    if (userExists) {
+    if (userExists.length > 0) {
       res.status(400);
       throw new Error("Email already registered");
     }
@@ -94,17 +109,31 @@ const registerUser = async (req, res, next) => {
     // if user was created successfully
     if (user) {
       const refreshToken = generateToken(user._id, "refresh");
+      const accessToken = generateToken(user._id, "access");
+
+      // res.cookie("AccessToken", accessToken, {
+      //   expires: new Date(Date.now() + process.env.MAX_AGE_ACCESS_COOKIE),
+      //   maxAge: process.env.MAX_AGE_ACCESS_COOKIE,
+      //   httpOnly: true,
+      // });
+
+      // res.cookie("RefreshToken", refreshToken, {
+      //   expires: new Date(Date.now() + process.env.MAX_AGE_REFRESH_COOKIE),
+      //   maxAge: process.env.MAX_AGE_REFRESH_COOKIE,
+      //   httpOnly: true,
+      // });
+
       res.status(201).json({
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        avatar,
-        isAdmin: user.isAdmin,
-        isConfirmed: user.isConfirmed,
-        accessToken: generateToken(user._id, "access"),
-        refreshToken,
-        contact,
-        organization,
+        success: true,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          isAdmin: user.isAdmin,
+          isConfirmed: user.isConfirmed,
+          accessToken,
+          refreshToken,
+        },
       });
     } else {
       res.status(400);

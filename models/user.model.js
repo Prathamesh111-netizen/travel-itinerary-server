@@ -16,14 +16,6 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    contact: {
-      type: Number,
-      default: 0,
-    },
-    organization: {
-      type: String,
-      default: "#",
-    },
     isAdmin: {
       type: Boolean,
       required: true,

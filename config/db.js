@@ -35,13 +35,13 @@ class database {
 
     db.once("open", function () {
       console.log("We're connected!");
-      db.User = User;
-      db.Token = Token;
     });
 
     db.on("disconnected", function () {
       console.log("Mongoose default connection is disconnected");
     });
+    db.User = User;
+    db.Token = Token;
   }
 }
 
