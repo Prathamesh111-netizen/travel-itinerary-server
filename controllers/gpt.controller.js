@@ -12,7 +12,6 @@ const getGPT = async (req, res, next) => {
       frequency_penalty: 0,
       presence_penalty: 0,
     });
-      console.log(response);
     res.status(200).send(response.data);
   } catch (err) {
     next(err);

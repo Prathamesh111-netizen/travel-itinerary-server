@@ -8,6 +8,7 @@ const Database = require("./config/db");
 
 const {notFound, errorHandler} = require("./middleware");
 const gptRoute = require("./routes/gpt.route");
+const userRoute = require("./routes/user.route");
 
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
 
