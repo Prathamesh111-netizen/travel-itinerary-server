@@ -2,10 +2,10 @@ const openai = require("../config/gpt");
 
 const getGPT = async (req, res, next) => {
   try {
-    // const { prompt } = req.body || "What is the meaning of life?";
+    const { prompt } = req.body || "What is the meaning of life?";
     const response = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: "What is the meaning of life?",
+      prompt: prompt,
       temperature: 0.7,
       max_tokens: 256,
       top_p: 1,
