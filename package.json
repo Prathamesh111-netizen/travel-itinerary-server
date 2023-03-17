@@ -31,7 +31,9 @@
     "nodemon": "^2.0.21",
     "openai": "^3.2.1",
     "swagger-ui-express": "^4.6.2",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "xml-js": "^1.6.11",
+    "xml2json-light": "^1.0.6"
   },
   "devDependencies": {
     "eslint": "^8.36.0"

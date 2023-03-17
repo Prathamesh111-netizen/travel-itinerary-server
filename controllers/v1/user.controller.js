@@ -1,6 +1,6 @@
-const { User, ApiToken, AccessToken } = require("../config/db");
+const { User, ApiToken, AccessToken } = require("../../config/db");
 const { v4: uuidv4 } = require("uuid");
-const generateToken = require("../utils/generateToken");
+const generateToken = require("../../utils/generateToken");
 
 // @desc register a new user
 // @route POST /api/users/

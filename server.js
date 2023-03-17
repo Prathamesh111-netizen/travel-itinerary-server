@@ -7,8 +7,14 @@ const app = express();
 const Database = require("./config/db");
 
 const { notFound, errorHandler } = require("./middleware");
-const itineraryRoute = require("./routes/itinerary.route");
-const userRoute = require("./routes/user.route");
+
+// routes
+const {
+  userRouter,
+  itineraryRouter,
+  commuteRouter,
+  currencyRouter,
+} = require("./routes/v1/index.js");
 
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
 
@@ -25,8 +31,10 @@ app.use(function (req, res, next) {
 });
 
 // routes
-app.use("/api/v1/users", userRoute);
-app.use("/api/v1/itinerary", itineraryRoute);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/itinerary", itineraryRouter);
+app.use("/api/v1/commute", commuteRouter);
+app.use("/api/v1/currency", currencyRouter);
 
 app.get("/", (req, res) => {
   res.json({ status: `OK at ${new Date()}` });

@@ -1,4 +1,4 @@
-const openai = require("../config/gpt");
+const openai = require("../../config/gpt");
 
 const getResult = async (req, res, next) => {
   try {
