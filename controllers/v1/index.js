@@ -4,6 +4,7 @@ const currencyController = require('./currency.controller');
 const itineraryController = require('./itinerary.controller');
 const userController = require('./user.controller');
 const locationController = require('./location.controller');
+const tokenController = require('./token.controller');
 
 module.exports = {
     accomodationController,
@@ -11,5 +12,6 @@ module.exports = {
     currencyController,
     itineraryController,
     userController,
-    locationController
+    locationController,
+    tokenController,
 };

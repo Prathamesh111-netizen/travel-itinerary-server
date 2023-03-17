@@ -83,9 +83,7 @@ const login = async (req, res, next) => {
         existingToken.save();
       }
 
-      const apiToken = await ApiToken.findOne({ email });
-
-      
+      // const apiToken = await ApiToken.findOne({ email });
 
       res.send({
         success: true,
@@ -98,7 +96,7 @@ const login = async (req, res, next) => {
           isConfirmed: user.isConfirmed,
           avatar: user.avatar,
           accessToken: accessToken,
-          apiToken: apiToken.token,
+          // apiToken: apiToken.token,
         },
       });
     } else {
@@ -127,9 +125,10 @@ const getUsers = async (req, res, next) => {
 // @access PRIVATE/ADMIN
 const getUserById = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
-    const apiToken = await ApiToken.findOne({ email: user.email });
-    
+    const { id } = req.user;
+    const user = await User.findById(id).select("-password");
+    // const apiToken = await ApiToken.findOne({ email: user.email });
+
     if (user)
       res.json({
         success: true,
@@ -139,7 +138,7 @@ const getUserById = async (req, res, next) => {
           name: user.name,
           isAdmin: user.isAdmin,
           isConfirmed: user.isConfirmed,
-          apiToken: apiToken.token,
+          // apiToken: apiToken.token,
         },
       });
     else {
@@ -150,7 +149,5 @@ const getUserById = async (req, res, next) => {
     next(error);
   }
 };
-
-
 
 module.exports = { getUserById, registerUser, getUsers, login };

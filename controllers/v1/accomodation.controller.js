@@ -125,8 +125,34 @@ const getHotelByGeocode = async (req, res, next) => {
   }
 };
 
+const getHotelratings = async (req, res, next) => {
+  try{
+    const { hotelIds } = req.query;
+    console.log(hotelIds);
+    if(!hotelIds){
+      throw new Error("Hotels are required");
+    }
+    const completeurl = `https://test.api.amadeus.com/v2/e-reputation/hotel-sentiments?hotelIds=${hotelIds}`;
+    const token = await amadeousTokenGenerator();
+    const config = {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    };
+    const response = await axios.get(completeurl, config);
+    res.status(200).json({
+      success: true,
+      data: response.data.data,
+    });
+
+  }catch(error){
+    next(error);
+  }
+}
+
 module.exports = {
   getHotelbyID,
   getHotelbyCity,
   getHotelByGeocode,
+  getHotelratings
 };

@@ -76,11 +76,17 @@ const getResult = async (req, res, next) => {
 
     let i = 1;
     spiltedResult.forEach((element) => {
+      // remove / character from string
+      // remove " character from string
+      element = element.replace(/"/g, "");
+      element = element.replace(/\//g, "");
       let itinerary = element.split("Day");
       itinerary.shift();
       for (let index = 0; index < itinerary.length; index++) {
         itinerary[index] = "Day " + itinerary[index];
       }
+
+
 
       if (itinerary.length > 1) {
         finalResult.result.push({

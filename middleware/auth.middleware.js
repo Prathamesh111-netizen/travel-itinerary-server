@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("../config/db");
+const { User, ApiToken } = require("../config/db");
 
 const protectRoute = async (req, res, next) => {
   try {
@@ -27,6 +27,9 @@ const protectRoute = async (req, res, next) => {
         res.status(401);
         throw new Error("Not authorised. Token failed");
       }
+    } else {
+      res.status(401);
+      throw new Error("Not authorised. No token");
     }
   } catch (err) {
     console.log(err);
@@ -42,4 +45,41 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-module.exports = { protectRoute, isAdmin };
+const isAPItokenAuthorised = async (req, res, next) => {
+  try {
+    let token;
+    // if the header includes a Bearer token
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      try {
+        // get only the token string
+        token = req.headers.authorization.split(" ")[1];
+
+        const isApiTokenValid = await ApiToken.findOne({ token: token });
+        if (!isApiTokenValid) {
+          throw new Error("Invalid API token");
+        }
+
+        if (token.usage >= token.maxLimit) {
+          throw new Error("API token usage limit exceeded");
+        }
+
+        next();
+      } catch (error) {
+        console.log(error);
+        res.status(401);
+        throw new Error("Not authorised. Token failed");
+      }
+    } else {
+      res.status(401);
+      throw new Error("Not authorised. No token");
+    }
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+
+module.exports = { protectRoute, isAdmin, isAPItokenAuthorised };

@@ -2,7 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-// const { protectRoute, isAdmin } = require("../../middleware/auth.middleware");
+const { protectRoute, isAdmin } = require("../../middleware/index.js");
 
 const {
   userController: { registerUser, getUserById, getUsers, login },
@@ -10,8 +10,6 @@ const {
 
 router.route("/login").post(login);
 
-router.route("/:id").get(getUserById);
-
-router.route("/").post(registerUser).get(getUsers);
+router.route("/").post(registerUser).get(protectRoute, getUserById);
 
 module.exports = router;
