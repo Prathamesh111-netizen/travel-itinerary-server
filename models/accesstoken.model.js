@@ -18,4 +18,4 @@ const tokenSchema = mongoose.Schema(
 // delete the refresh tokens every 7 days
 tokenSchema.index({ createdAt: 1 }, { expires: "7d" });
 
-module.exports = mongoose.model("Token", tokenSchema);
+module.exports = mongoose.model("AccessToken", tokenSchema);

@@ -1,87 +1,6 @@
-const { User, Token } = require("../config/db");
+const { User, ApiToken, AccessToken } = require("../config/db");
+const { v4: uuidv4 } = require("uuid");
 const generateToken = require("../utils/generateToken");
-const generateGravatar = require("../utils/generateGravatar");
-
-// @desc get user by ID
-// @route GET /api/users/:id
-// @access PRIVATE/ADMIN
-const getUserById = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.params.id).select("-password");
-    if (user)
-      res.json({
-        success: true,
-        data: user,
-      });
-    else {
-      res.status(404);
-      throw new Error("User does not exist");
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc authenticate user and get token
-// @route POST /api/users/login
-// @access PUBLIC
-const login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-
-    let user = await User.findOne({ email });
-    // generate both the access and the refresh tokens
-    const accessToken = generateToken(user._id, "access");
-    const refreshToken = generateToken(user._id, "refresh");
-
-    res.cookie("AccessToken", accessToken, {
-      expires: new Date(Date.now() + process.env.MAX_AGE_ACCESS_COOKIE),
-      maxAge: process.env.MAX_AGE_ACCESS_COOKIE,
-      httpOnly: true,
-    });
-
-    res.cookie("RefreshToken", refreshToken, {
-      expires: new Date(Date.now() + process.env.MAX_AGE_REFRESH_COOKIE),
-      maxAge: process.env.MAX_AGE_REFRESH_COOKIE,
-      httpOnly: true,
-    });
-
-    // if the passwords are matching, then check if a refresh token exists for this user
-    if (user && (await user.matchPassword(password))) {
-      const existingToken = await Token.findOne({ email });
-      // if no refresh token available, create one and store it in the db
-      if (!existingToken) {
-        await Token.create({
-          email,
-          token: refreshToken,
-        });
-      } else {
-        existingToken.token = refreshToken;
-        existingToken.save();
-      }
-
-      res.json({
-        success: true,
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          isAdmin: user.isAdmin,
-          profilephoto: user.profilephoto,
-          isConfirmed: user.isConfirmed,
-          avatar: user.avatar,
-          accessToken,
-          refreshToken,
-        },
-      });
-    } else {
-      res.status(401);
-      throw new Error(user ? "Invalid Password" : "Invalid email");
-    }
-  } catch (error) {
-    next(error);
-  }
-};
 
 // @desc register a new user
 // @route POST /api/users/
@@ -97,9 +16,6 @@ const registerUser = async (req, res, next) => {
       throw new Error("Email already registered");
     }
 
-    // the gravatar will be unique for each registered email
-    const avatar = generateGravatar(email);
-
     const user = await User.create({
       name,
       email,
@@ -108,20 +24,18 @@ const registerUser = async (req, res, next) => {
 
     // if user was created successfully
     if (user) {
-      const refreshToken = generateToken(user._id, "refresh");
+      // generate API tokens
+      const apiToken = uuidv4();
+      ApiToken.create({
+        email: user.email,
+        token: apiToken,
+      });
+
       const accessToken = generateToken(user._id, "access");
-
-      // res.cookie("AccessToken", accessToken, {
-      //   expires: new Date(Date.now() + process.env.MAX_AGE_ACCESS_COOKIE),
-      //   maxAge: process.env.MAX_AGE_ACCESS_COOKIE,
-      //   httpOnly: true,
-      // });
-
-      // res.cookie("RefreshToken", refreshToken, {
-      //   expires: new Date(Date.now() + process.env.MAX_AGE_REFRESH_COOKIE),
-      //   maxAge: process.env.MAX_AGE_REFRESH_COOKIE,
-      //   httpOnly: true,
-      // });
+      AccessToken.create({
+        email: user.email,
+        token: accessToken,
+      });
 
       res.status(201).json({
         success: true,
@@ -131,8 +45,8 @@ const registerUser = async (req, res, next) => {
           name: user.name,
           isAdmin: user.isAdmin,
           isConfirmed: user.isConfirmed,
-          accessToken,
-          refreshToken,
+          apiToken: apiToken,
+          accessToken: accessToken,
         },
       });
     } else {
@@ -144,4 +58,99 @@ const registerUser = async (req, res, next) => {
   }
 };
 
-module.exports = { getUserById, registerUser, login };
+// @desc authenticate user and get token
+// @route POST /api/users/login
+// @access PUBLIC
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    let user = await User.findOne({ email });
+
+    // if the passwords are matching, then check if a refresh token exists for this user
+    if (user && (await user.matchPassword(password))) {
+      const accessToken = generateToken(user._id, "access");
+      const existingToken = await AccessToken.findOne({ email });
+
+      // if no refresh token available, create one and store it in the db
+      if (!existingToken) {
+        // generate both the access and the refresh tokens
+        await AccessToken.create({
+          email,
+          token: accessToken,
+        });
+      } else {
+        existingToken.token = accessToken;
+        existingToken.save();
+      }
+
+      const apiToken = await ApiToken.findOne({ email });
+
+      
+
+      res.send({
+        success: true,
+        data: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          isAdmin: user.isAdmin,
+          profilephoto: user.profilephoto,
+          isConfirmed: user.isConfirmed,
+          avatar: user.avatar,
+          accessToken: accessToken,
+          apiToken: apiToken.token,
+        },
+      });
+    } else {
+      res.status(401);
+      throw new Error(user ? "Invalid Password" : "Invalid email");
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({});
+    res.json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc get user by ID
+// @route GET /api/users/:id
+// @access PRIVATE/ADMIN
+const getUserById = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    const apiToken = await ApiToken.findOne({ email: user.email });
+    
+    if (user)
+      res.json({
+        success: true,
+        data: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          isAdmin: user.isAdmin,
+          isConfirmed: user.isConfirmed,
+          apiToken: apiToken.token,
+        },
+      });
+    else {
+      res.status(404);
+      throw new Error("User does not exist");
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+module.exports = { getUserById, registerUser, getUsers, login };

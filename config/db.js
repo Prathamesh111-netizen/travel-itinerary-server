@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/user.model");
-const Token = require("../models/token.model");
+const ApiToken = require("../models/apitoken.model");
+const AccessToken = require("../models/accesstoken.model");
 
 var db = null;
 class database {
@@ -41,7 +42,8 @@ class database {
       console.log("Mongoose default connection is disconnected");
     });
     db.User = User;
-    db.Token = Token;
+    db.ApiToken = ApiToken;
+    db.AccessToken = AccessToken;
   }
 }
 

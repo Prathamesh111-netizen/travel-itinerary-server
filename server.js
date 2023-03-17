@@ -7,7 +7,7 @@ const app = express();
 const Database = require("./config/db");
 
 const { notFound, errorHandler } = require("./middleware");
-const gptRoute = require("./routes/gpt.route");
+const itineraryRoute = require("./routes/itinerary.route");
 const userRoute = require("./routes/user.route");
 
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
@@ -25,8 +25,8 @@ app.use(function (req, res, next) {
 });
 
 // routes
-app.use("/api/gpt", gptRoute);
-app.use("/api/users", userRoute);
+app.use("/api/v1/users", userRoute);
+app.use("/api/v1/itinerary", itineraryRoute);
 
 app.get("/", (req, res) => {
   res.json({ status: `OK at ${new Date()}` });
