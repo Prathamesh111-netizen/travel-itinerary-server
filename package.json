@@ -30,6 +30,7 @@
     "morgan": "^1.10.0",
     "nodemon": "^2.0.21",
     "openai": "^3.2.1",
+    "qs": "^6.11.1",
     "swagger-ui-express": "^4.6.2",
     "uuid": "^9.0.0",
     "xml-js": "^1.6.11",

@@ -14,6 +14,8 @@ const {
   itineraryRouter,
   commuteRouter,
   currencyRouter,
+  accomodationRouter,
+  locationRouter
 } = require("./routes/v1/index.js");
 
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
@@ -35,6 +37,8 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/itinerary", itineraryRouter);
 app.use("/api/v1/commute", commuteRouter);
 app.use("/api/v1/currency", currencyRouter);
+app.use("/api/v1/accomodation", accomodationRouter);
+app.use("/api/v1/location", locationRouter);
 
 app.get("/", (req, res) => {
   res.json({ status: `OK at ${new Date()}` });

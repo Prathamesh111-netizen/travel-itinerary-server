@@ -1,18 +1,21 @@
 const axios = require("axios");
-
-const config = {
-  headers: {
-    Authorization: "Bearer " + process.env.AMADEUS_ACCESS_TOKEN,
-  },
-};
+const amadeousTokenGenerator = require("../../utils/amdeous.token.generator");
 
 const url = `${process.env.AMADEUS_API_HOST}/reference-data/locations/hotels`;
 
 const getHotelbyID = async (req, res, next) => {
   try {
-    const hotelID = req.params.hotelID;
+    const { id } = req.params;
+    console.log(id);
+    
     //reference-data/locations/hotels/by-hotels?hotelIds=ACPAR419
-    const completeurl = `${url}/by-hotels?hotelIds=${hotelID}`;
+    const completeurl = `${url}/by-hotels?hotelIds=${id}`;
+    const token = await amadeousTokenGenerator();
+    const config = {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    };
 
     const response = await axios.get(completeurl, config);
     res.status(200).json({
@@ -26,7 +29,9 @@ const getHotelbyID = async (req, res, next) => {
 
 const getHotelbyCity = async (req, res, next) => {
   try {
-    let { cityCode, radius, radiusUnit, ratings, amenities } = req.query;
+    const { cityCode } = req.params;
+
+    let { radius, radiusUnit, ratings, amenities } = req.query;
     if (!cityCode) {
       throw new Error("City Code is required");
     }
@@ -52,7 +57,17 @@ const getHotelbyCity = async (req, res, next) => {
 
     let query = `?cityCode=${cityCode}&radius=${radius}&radiusUnit=${radiusUnit}&ratings=${ratings}&amenities=${amenities}`;
 
-    const completeurl = `${url}/by-city/${query}`;
+    const completeurl = `${url}/by-city${query}`;
+
+    const token = await amadeousTokenGenerator();
+    console.log("Token is", token);
+    const config = {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    };
+
+    console.log(token);
     const response = await axios.get(completeurl, config);
     res.status(200).json({
       success: true,
@@ -65,7 +80,8 @@ const getHotelbyCity = async (req, res, next) => {
 
 const getHotelByGeocode = async (req, res, next) => {
   try {
-    const { latitude, longitude, radius, radiusUnit, ratings, amenities } =
+    const { latitude, longitude } = req.params;
+    let { radius, radiusUnit, ratings, amenities } =
       req.query;
     if (!latitude || !longitude) {
       throw new Error("Latitude and Longitude are required");
@@ -89,9 +105,16 @@ const getHotelByGeocode = async (req, res, next) => {
     ratings = ratings.join(",");
     amenities = amenities.join(",");
 
+    
     let query = `?latitude=${latitude}&longitude=${longitude}&radius=${radius}&radiusUnit=${radiusUnit}&ratings=${ratings}&amenities=${amenities}`;
+    const completeurl = `${url}/by-geocode${query}`;
 
-    const completeurl = `${url}/by-geocode/${query}`;
+    const token = await amadeousTokenGenerator();
+    const config = {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    };
     const response = await axios.get(completeurl, config);
     res.status(200).json({
       success: true,
